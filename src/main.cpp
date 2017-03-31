@@ -1,4 +1,6 @@
-﻿//GLEW
+﻿ //HOLA
+
+//GLEW
 #define GLEW_STATIC
 #include <GL\glew.h>
 //GLFW
@@ -7,6 +9,8 @@
 #include <iostream>
 
 //Shader
+
+int a = 0;
 
 #include <string>
 #include <fstream>
@@ -24,10 +28,7 @@ void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 
-
 int main() {
-
-	shader shader("./src/SimpleVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//initGLFW
 	//set GLFW
@@ -119,6 +120,9 @@ int main() {
 	//liberar el buffer	
 	//liberar el buffer de vertices
 	glBindVertexArray(0);
+
+
+	shader shader("./src/SimpleVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Bucle de dibujado (VENTANA)
 
