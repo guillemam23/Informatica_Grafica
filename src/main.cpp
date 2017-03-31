@@ -1,5 +1,4 @@
-﻿ //HOLA
-
+﻿
 //GLEW
 #define GLEW_STATIC
 #include <GL\glew.h>
@@ -9,8 +8,6 @@
 #include <iostream>
 
 //Shader
-
-int a = 0;
 
 #include <string>
 #include <fstream>
