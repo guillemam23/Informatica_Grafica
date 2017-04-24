@@ -1,9 +1,9 @@
-﻿//Prueba funcionamiento GIT
+﻿
 //GLEW
 #define GLEW_STATIC
 #include <GL\glew.h>
-//GLFW
 
+//GLFW
 #include <GLFW\glfw3.h>
 #include <iostream>
 
@@ -16,6 +16,8 @@
 #include "shader.h"
 
 using namespace std;
+
+#define PI 3.14159265
 
 const GLint WIDTH = 800, HEIGHT = 600;
 bool WIREFRAME = false;
@@ -45,7 +47,7 @@ int main() {
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Primera ventana", nullptr, nullptr);
 	if (!window) {
 		cout << "Error al crear la ventana" << endl;
-		glfwTerminate();
+		//glfwTerminate();
 		std::exit(EXIT_FAILURE);
 	}
 
@@ -54,7 +56,7 @@ int main() {
 	glewExperimental = GL_TRUE;
 	if (GLEW_OK != glewInit()) {
 		std::cout << "Error al inicializar glew" << std::endl;
-		glfwTerminate();
+		//	glfwTerminate();
 		return NULL;
 	}
 
@@ -71,10 +73,19 @@ int main() {
 
 	GLfloat VertexBufferObject[] = {
 
-		0.5f,  0.5f, 0.0f,  // Top Right
-		0.5f, -0.5f, 0.0f,  // Bottom Right
-		-0.5f, -0.5f, 0.0f,  // Bottom Left
-		-0.5f,  0.5f, 0.0f   // Top Left 
+		//Positions           
+
+		0.5f,  0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		-0.5f, -0.5f, 0.0f,
+		-0.5f,  0.5f, 0.0f,
+
+		//Colors 
+
+		0.0f,0.1f,0.4f, // Top Right
+		0.0f,1.0f,0.0f, // Bottom Right
+		0.0f,1.0f,0.0f, // Bottom Left
+		0.0f,0.1f,0.4f  // Top Left 
 
 	};
 
@@ -91,8 +102,8 @@ int main() {
 
 	GLuint VBO;
 	GLuint EBO;
-
 	GLuint VAO;
+
 	//reservar memoria para el VAO, VBO y EBO
 
 	glGenBuffers(1, &VBO);
@@ -118,6 +129,11 @@ int main() {
 	//liberar el buffer de vertices
 	glBindVertexArray(0);
 
+	//Variables del ejercicio de movimiento
+
+	GLfloat lastTime = 0;
+	GLfloat angle = 0;
+	GLfloat increment = 0;
 
 	shader shader("./src/SimpleVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
@@ -140,6 +156,41 @@ int main() {
 
 		shader.Use();
 
+		//Enlazamos la variable con el shader
+
+		GLint variableShader = glGetUniformLocation(shader.Program, "offset");
+
+		//Modificamos el valor del offser segun el sinus y el tiempo
+
+		GLdouble currentTime = glfwGetTime(); //Tiempo de ejecución
+		GLfloat deltatime = GLfloat(currentTime - lastTime);
+
+		//Angulo++
+
+		if (deltatime > 0.04)
+		{
+			increment = abs(sin(angle / 180 * PI));
+
+			//Pasamos el contenido al shader
+
+			glUniform3f(variableShader, increment*0.5f, 0.0f, 0.0f);
+			lastTime = currentTime;
+			angle++;
+
+		}
+
+		//Comprobar que encuentra la variable Uniform del shader
+
+		/*if (glGetUniformLocation(shader.Program, "offset") == -1) {
+		cout << "Error al localizar la variable Uniform" << endl;
+		//glfwTerminate();
+		}
+		*/
+		GLint offset;
+		offset = (glGetUniformLocation(shader.Program, "offset"));
+		glUniform1f(offset, cos(abs(glfwGetTime())));
+
+
 		//Shader::USE(programID);
 
 		//glUseProgram(programID);
@@ -160,7 +211,7 @@ int main() {
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window); //?????//
-								 //Event poll
+
 		glfwPollEvents();
 	}
 
@@ -185,6 +236,7 @@ void error_callback(int error, const char* description)
 {
 	fputs(description, stderr);
 }
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	//Cuando pulsamos la tecla ESC se cierra la aplicacion
