@@ -1,9 +1,8 @@
-﻿
-//GLEW
+﻿//GLEW
 #define GLEW_STATIC
 #include <GL\glew.h>
-
 //GLFW
+
 #include <GLFW\glfw3.h>
 #include <iostream>
 
@@ -15,11 +14,11 @@
 #include  <iostream>
 #include "shader.h"
 
+#include "SOIL.h"
+
 using namespace std;
 
-#define PI 3.14159265
-
-const GLint WIDTH = 800, HEIGHT = 600;
+const GLint WIDTH = 800, HEIGHT = 800;
 bool WIREFRAME = false;
 int screenWithd, screenHeight;
 
@@ -47,7 +46,7 @@ int main() {
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Primera ventana", nullptr, nullptr);
 	if (!window) {
 		cout << "Error al crear la ventana" << endl;
-		//glfwTerminate();
+		glfwTerminate();
 		std::exit(EXIT_FAILURE);
 	}
 
@@ -56,7 +55,7 @@ int main() {
 	glewExperimental = GL_TRUE;
 	if (GLEW_OK != glewInit()) {
 		std::cout << "Error al inicializar glew" << std::endl;
-		//	glfwTerminate();
+		glfwTerminate();
 		return NULL;
 	}
 
@@ -68,25 +67,17 @@ int main() {
 
 
 	//cargamos los shader
+	shader shader("./src/textureVertex.vertexshader", "./src/textureFragment.fragmentshader");
 
 	// Definir el buffer de vertices (shader modificado)
 
-	GLfloat VertexBufferObject[] = {
+	GLfloat vertices[] = {
 
-		//Positions           
-
-		0.5f,  0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f,
-		-0.5f,  0.5f, 0.0f,
-
-		//Colors 
-
-		0.0f,0.1f,0.4f, // Top Right
-		0.0f,1.0f,0.0f, // Bottom Right
-		0.0f,1.0f,0.0f, // Bottom Left
-		0.0f,0.1f,0.4f  // Top Left 
-
+		// Positions          // Colors           // Texture Coords
+		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,  // Top Right
+		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,  // Bottom Right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left 
 	};
 
 	// Definir el EBO
@@ -103,12 +94,16 @@ int main() {
 	GLuint VBO;
 	GLuint EBO;
 	GLuint VAO;
+	GLuint texture;
 
 	//reservar memoria para el VAO, VBO y EBO
 
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 	glGenBuffers(1, &VAO);
+
+	glGenTextures(1, &texture);
+
 
 	//Declarar el VBO y el EBO
 
@@ -117,80 +112,67 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-	//Alocamos memoria suficiente para almacenar 4 grupos de 3 floats (segundo parámetro)
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * 4, VertexBufferObject, GL_STATIC_DRAW);
-	//Alocamos ahora el EBO()
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * 6, IndexBufferObject, GL_STATIC_DRAW);
-	//Establecer las propiedades de los vertices
-	glEnableVertexAttribArray(0); //??????//
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
+	glBindTexture(GL_TEXTURE_2D, texture);
 
-	//liberar el buffer	
+	//Establecemos los parametros de WRAPPING Y FILTERING
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	int width, height;
+	unsigned char* image = SOIL_load_image("./src/crash_bandicoot.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	SOIL_free_image_data(image);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+	//Alocamos memoria suficiente para almacenar 4 grupos de 3 floats (segundo parámetro) (VBO)
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	//Alocamos ahora el EBO()
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(IndexBufferObject), IndexBufferObject, GL_STATIC_DRAW);
+
+	//Alocamos el VAO()
+
+	//Buffer de posicion
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	//Buffer de color
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
+
+	// Buffer de textura
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
 	//liberar el buffer de vertices
 	glBindVertexArray(0);
-
-	//Variables del ejercicio de movimiento
-
-	GLfloat lastTime = 0;
-	GLfloat angle = 0;
-	GLfloat increment = 0;
-
-	shader shader("./src/SimpleVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Bucle de dibujado (VENTANA)
 
 	while (!glfwWindowShouldClose(window)) {
 
-		glViewport(0, 0, screenWithd, screenHeight);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glfwPollEvents();
+
+		//glViewport(0, 0, screenWithd, screenHeight);
 
 		glClearColor(0.6f, 0.6f, 1.0f, 1.f);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(-10, 10, -10.f, 10.f, -1.0f, 10.f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		//glMatrixMode(GL_PROJECTION);
+		//glLoadIdentity();
+		//glOrtho(-10, 10, -10.f, 10.f, -1.0f, 10.f);
 
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+		//glMatrixMode(GL_MODELVIEW);
+		//glLoadIdentity();
 
 		//Establecer el shader
-
-		shader.Use();
-
-		//Enlazamos la variable con el shader
-
-		GLint variableShader = glGetUniformLocation(shader.Program, "offset");
-
-		//Modificamos el valor del offser segun el sinus y el tiempo
-
-		GLdouble currentTime = glfwGetTime(); //Tiempo de ejecución
-		GLfloat deltatime = GLfloat(currentTime - lastTime);
-
-		//Angulo++
-
-		if (deltatime > 0.04)
-		{
-			increment = abs(sin(angle / 180 * PI));
-
-			//Pasamos el contenido al shader
-
-			glUniform3f(variableShader, increment*0.5f, 0.0f, 0.0f);
-			lastTime = currentTime;
-			angle++;
-
-		}
-
-		//Comprobar que encuentra la variable Uniform del shader
-
-		/*if (glGetUniformLocation(shader.Program, "offset") == -1) {
-		cout << "Error al localizar la variable Uniform" << endl;
-		//glfwTerminate();
-		}
-		*/
-		GLint offset;
-		offset = (glGetUniformLocation(shader.Program, "offset"));
-		glUniform1f(offset, cos(abs(glfwGetTime())));
-
-
 		//Shader::USE(programID);
 
 		//glUseProgram(programID);
@@ -202,23 +184,35 @@ int main() {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		//pintar el VAO
-		glBindVertexArray(VAO);
-		// bind index buffer if you want to render indexed data
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		// indexed draw call
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+		//Pintar la textura
 
+		shader.Use();
+
+		//Activar textura
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glUniform1i(glGetUniformLocation(shader.Program, "texture"), 0);
+
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+		glBindVertexArray(0);
+
+
+		// bind index buffer if you want to render indexed data
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		// indexed draw call
 
 		// Swap the screen buffers
-		glfwSwapBuffers(window); //?????//
+		glfwSwapBuffers(window);
+		//Event poll
 
-		glfwPollEvents();
 	}
 
 	// liberar la memoria de los VAO, EBO y VBO
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
 
@@ -236,7 +230,6 @@ void error_callback(int error, const char* description)
 {
 	fputs(description, stderr);
 }
-
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	//Cuando pulsamos la tecla ESC se cierra la aplicacion
