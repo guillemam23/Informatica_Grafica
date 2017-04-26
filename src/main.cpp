@@ -1,4 +1,5 @@
-﻿//GLEW
+﻿
+//GLEW
 #define GLEW_STATIC
 #include <GL\glew.h>
 //GLFW
@@ -25,6 +26,8 @@ int screenWithd, screenHeight;
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+bool TeclaUp = false;
+bool TeclaDown = false;
 
 int main() {
 
@@ -43,7 +46,7 @@ int main() {
 		std::exit(EXIT_FAILURE);
 
 	//crear la ventana
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Primera ventana", nullptr, nullptr);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Informatica grafica", nullptr, nullptr);
 	if (!window) {
 		cout << "Error al crear la ventana" << endl;
 		glfwTerminate();
@@ -59,10 +62,10 @@ int main() {
 		return NULL;
 	}
 
-	glfwGetFramebufferSize(window, &screenWithd, &screenHeight); //??????//
+	glfwGetFramebufferSize(window, &screenWithd, &screenHeight); 
 
 
-																 //que funcion se llama cuando se detecta una pulsaci�n de tecla en la ventana x
+ //que funcion se llama cuando se detecta una pulsaci�n de tecla en la ventana x
 	glfwSetKeyCallback(window, key_callback);
 
 
@@ -94,27 +97,18 @@ int main() {
 	GLuint VBO;
 	GLuint EBO;
 	GLuint VAO;
-	GLuint texture;
 
 	//reservar memoria para el VAO, VBO y EBO
 
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 	glGenBuffers(1, &VAO);
+	
+	//Textura 1
 
-	glGenTextures(1, &texture);
-
-
-	//Declarar el VBO y el EBO
-
-	//Enlazar el buffer con openGL
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	//Establecemos los parametros de WRAPPING Y FILTERING
+	GLuint texture1;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
@@ -122,10 +116,36 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	int width, height;
-	unsigned char* image = SOIL_load_image("./src/crash_bandicoot.png", &width, &height, 0, SOIL_LOAD_RGB);
+	unsigned char* image = SOIL_load_image("./src/lisa_simpson.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//Textura 2
+
+	GLuint texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	int width2, height2;
+	unsigned char* image2 = SOIL_load_image("./src/bart_simpson.png", &width2, &height2, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGB, GL_UNSIGNED_BYTE, image2);
+	SOIL_free_image_data(image2);
+	glBindTexture(GL_TEXTURE_2D, 1);
+
+	GLfloat Opacidad = 0.5;
+
+	//Declarar el VBO y el EBO
+
+	//Enlazar el buffer con openGL
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
 
 	//Alocamos memoria suficiente para almacenar 4 grupos de 3 floats (segundo parámetro) (VBO)
@@ -146,13 +166,12 @@ int main() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
 
-
 	// Buffer de textura
 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
 
-	//liberar el buffer de vertices
+		//liberar el buffer de vertices
 	glBindVertexArray(0);
 
 	//Bucle de dibujado (VENTANA)
@@ -183,22 +202,51 @@ int main() {
 		else
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		//pintar el VAO
-		//Pintar la textura
-
 		shader.Use();
 
 		//Activar textura
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glUniform1i(glGetUniformLocation(shader.Program, "texture"), 0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glUniform1i(glGetUniformLocation(shader.Program, "Texture1"), 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+		glUniform1i(glGetUniformLocation(shader.Program, "Texture2"), 1);
+
+		glUniform1f(glGetUniformLocation(shader.Program, "Opacidad"), Opacidad);
+
+		//Modificación de la opacidad mediante las felchas
+
+		if (TeclaUp) {
+
+			if (Opacidad <= 0) {
+				Opacidad = 0;
+			}
+			else {
+				Opacidad = Opacidad - 0.1;
+			}
+			glUniform1i(glGetUniformLocation(shader.Program, "Opacidad"), Opacidad);
+			TeclaUp = false;
+		}
+		if (TeclaDown) {
+
+			if (Opacidad >= 1) {
+				Opacidad = 1;
+			}
+			else {
+				Opacidad = Opacidad + 0.1;
+
+			}
+			glUniform1i(glGetUniformLocation(shader.Program, "Opacidad"), Opacidad);
+			TeclaDown = false;
+		}
+
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 		glBindVertexArray(0);
-
-
+	
 		// bind index buffer if you want to render indexed data
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		// indexed draw call
@@ -236,7 +284,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-	//Cuando apretamos la tecla W se cambia a modo Wireframe
-	if (key == GLFW_KEY_W && action == GLFW_PRESS)
-		WIREFRAME = !WIREFRAME;
+
+	if (key == GLFW_KEY_UP && action == GLFW_PRESS) TeclaUp = true;
+	else TeclaUp = false;
+
+	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) TeclaDown = true;
+	else TeclaDown = false;
+	
 }
