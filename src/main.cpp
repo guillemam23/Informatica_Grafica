@@ -15,9 +15,14 @@
 #include  <iostream>
 #include "shader.h"
 
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
+
 #include "SOIL.h"
 
 using namespace std;
+using namespace glm;
 
 const GLint WIDTH = 800, HEIGHT = 800;
 bool WIREFRAME = false;
@@ -28,6 +33,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 bool TeclaUp = false;
 bool TeclaDown = false;
+bool TeclaRight = false;
+bool TeclaLeft = false;
 
 int main() {
 
@@ -82,6 +89,10 @@ int main() {
 		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
 		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left 
 	};
+	
+
+	
+	//vec4 transformedVector = matTranslacion * myVector; 
 
 	// Definir el EBO
 	GLuint IndexBufferObject[]{
@@ -179,11 +190,12 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
 
 		glfwPollEvents();
+		glClearColor(0.6f, 0.6f, 1.0f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		//glViewport(0, 0, screenWithd, screenHeight);
 
-		glClearColor(0.6f, 0.6f, 1.0f, 1.f);
-		glClear(GL_COLOR_BUFFER_BIT);
+	
 		//glMatrixMode(GL_PROJECTION);
 		//glLoadIdentity();
 		//glOrtho(-10, 10, -10.f, 10.f, -1.0f, 10.f);
@@ -195,6 +207,7 @@ int main() {
 		//Shader::USE(programID);
 
 		//glUseProgram(programID);
+
 		if (WIREFRAME == true) {
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -203,6 +216,29 @@ int main() {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		shader.Use();
+		/*GLfloat angle;*/
+		
+		/*if (TeclaRight) {
+
+			angle = angle + 5.0f;
+
+			TeclaRight = false;
+		}
+		if (TeclaLeft) {
+
+			angle = angle - 5.0f;
+
+			TeclaLeft = false;
+		}*/
+
+		mat4 transformacion;
+
+		transformacion = scale(transformacion, vec3(0.5f, -0.5f, 0.f));
+		transformacion = translate(transformacion, vec3(0.5f, 0.5f, 0.0f));
+		//transformacion = rotate(transformacion, angle, vec3(0.0f, 0.0f, 1.0f));
+
+		GLint transformacionlocation = glGetUniformLocation(shader.Program, "transformacion");
+		glUniformMatrix4fv(transformacionlocation, 1, GL_FALSE, value_ptr(transformacion));
 
 		//Activar textura
 
@@ -242,7 +278,7 @@ int main() {
 			TeclaDown = false;
 		}
 
-
+	
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 		glBindVertexArray(0);
@@ -290,5 +326,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) TeclaDown = true;
 	else TeclaDown = false;
-	
+
+	//if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+	//TeclaRight = false;
+
+	//if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
+	//TeclaLeft = false;
+	//
 }
