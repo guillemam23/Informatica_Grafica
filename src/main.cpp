@@ -90,10 +90,6 @@ int main() {
 		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left 
 	};
 	
-
-	
-	//vec4 transformedVector = matTranslacion * myVector; 
-
 	// Definir el EBO
 	GLuint IndexBufferObject[]{
 
@@ -195,7 +191,6 @@ int main() {
 
 		//glViewport(0, 0, screenWithd, screenHeight);
 
-	
 		//glMatrixMode(GL_PROJECTION);
 		//glLoadIdentity();
 		//glOrtho(-10, 10, -10.f, 10.f, -1.0f, 10.f);
@@ -216,9 +211,11 @@ int main() {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		shader.Use();
-		/*GLfloat angle;*/
+
+		GLfloat angle;
+		mat4 transformacion;
 		
-		/*if (TeclaRight) {
+		if (TeclaRight) {
 
 			angle = angle + 5.0f;
 
@@ -229,13 +226,11 @@ int main() {
 			angle = angle - 5.0f;
 
 			TeclaLeft = false;
-		}*/
-
-		mat4 transformacion;
+		}
 
 		transformacion = scale(transformacion, vec3(0.5f, -0.5f, 0.f));
 		transformacion = translate(transformacion, vec3(0.5f, 0.5f, 0.0f));
-		//transformacion = rotate(transformacion, angle, vec3(0.0f, 0.0f, 1.0f));
+		transformacion = rotate(transformacion, angle, vec3(0.0f, 0.0f, 1.0f));
 
 		GLint transformacionlocation = glGetUniformLocation(shader.Program, "transformacion");
 		glUniformMatrix4fv(transformacionlocation, 1, GL_FALSE, value_ptr(transformacion));
@@ -327,10 +322,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) TeclaDown = true;
 	else TeclaDown = false;
 
-	//if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
-	//TeclaRight = false;
+	if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) TeclaRight = true;
 
-	//if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
-	//TeclaLeft = false;
-	//
+	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) TeclaLeft = true;
+
 }
