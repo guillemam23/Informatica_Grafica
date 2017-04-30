@@ -2,19 +2,19 @@
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 vertexPosition_modelspace;
-layout(location = 1) in vec3 color;
 layout(location = 2) in vec2 textCoord;
 
 //OUT
-out vec3 ourColor;
 out vec2 TextCoord;
 
-uniform mat4 transformacion;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
 
 void main(){
 
-	gl_Position = transformacion * vec4 (vertexPosition_modelspace,1.0f);
-    ourColor = color;
+	gl_Position = projection * view * model * vec4 (vertexPosition_modelspace,1.0f);
     TextCoord = vec2(textCoord.x, 1.0-textCoord.y);
 
 }

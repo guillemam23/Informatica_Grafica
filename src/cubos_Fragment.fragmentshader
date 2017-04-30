@@ -1,12 +1,9 @@
 #version 330 core
 
 //Input data
-in vec3 ourColor;
 in vec2 TextCoord;
 
 // Ouput data
-
-
 out vec4 color;
 //out vec2 textCoord;
 
@@ -20,5 +17,12 @@ void main()
 	// Output color = red 
 	//color = vec4(ourColor,1.0f);
     //color = mix(texture(Texture1, TextCoord),texture(Texture2, TextCoord),Opacidad);
+	//color = texture(Texture1, TextCoord);
+
+	if(Opacidad == 1.0f){
 	color = texture(Texture1, TextCoord);
+	}
+	else{ color = texture(Texture2, TextCoord);
+	}
+
 }
