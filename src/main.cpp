@@ -329,6 +329,25 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
+		//Carga de 10 cubos
+
+
+		for (int i = 1; i < 10; i++) {
+
+			mat4 model;
+
+			model = translate(model, CubesPositionBuffer[i]);
+			model = rotate(model, (GLfloat)glfwGetTime()*10.0f, vec3(0.5f, 1.0f, 0.0f));
+
+			glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, value_ptr(model));
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+		}
+
+
 
 
 		// bind index buffer if you want to render indexed data
