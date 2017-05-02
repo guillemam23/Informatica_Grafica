@@ -30,6 +30,7 @@ int screenWithd, screenHeight;
 
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void DoMovement(GLFWwindow* window);
 
 bool TeclaUp = false;
 bool TeclaDown = false;
@@ -84,8 +85,7 @@ int main() {
 
 	//que funcion se llama cuando se detecta una pulsaci�n de tecla en la ventana x
 	glfwSetKeyCallback(window, key_callback);
-
-
+	DoMovement(window);
 	//cargamos los shader
 	shader shader("./src/cubos_Vertex.vertexshader", "./src/cubos_Fragment.fragmentshader");
 
@@ -257,9 +257,6 @@ int main() {
 	//Matriz look at
 
 	mat4 view;
-	view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-	
 
 	GLfloat camX = 0.0f;
 	GLfloat camZ = 3.0f;
@@ -268,22 +265,9 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
 
 		glfwPollEvents();
+		DoMovement(window);
 		glClearColor(0.6f, 0.6f, 1.0f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//glViewport(0, 0, screenWithd, screenHeight);
-
-		//glMatrixMode(GL_PROJECTION);
-		//glLoadIdentity();
-		//glOrtho(-10, 10, -10.f, 10.f, -1.0f, 10.f);
-
-		//glMatrixMode(GL_MODELVIEW);
-		//glLoadIdentity();
-
-		//Establecer el shader
-		//Shader::USE(programID);
-
-		//glUseProgram(programID);
 
 		if (WIREFRAME == true) {
 
@@ -306,8 +290,6 @@ int main() {
 
 		GLfloat angleX;
 		GLfloat angleY;
-
-		
 
 		//Modificación de la opacidad mediante las felchas
 
@@ -373,13 +355,13 @@ int main() {
 		//Camara
 		
 		GLfloat radius = 10.0f;
-		GLfloat camX = sin(glfwGetTime()*3) * radius;
-		GLfloat camZ = cos(glfwGetTime()*3) * radius;
+		/*GLfloat camX = sin(glfwGetTime()*3) * radius;
+		GLfloat camZ = cos(glfwGetTime()*3) * radius;*/
 
 		cameraPos = vec3(camX, 0.f, camZ);
 
-		view = lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-		//view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		//view = lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+		view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
 		GLint modelLoc = glGetUniformLocation(shader.Program, "model");
@@ -443,13 +425,27 @@ void error_callback(int error, const char* description)
 {
 	fputs(description, stderr);
 }
+
+void DoMovement(GLFWwindow* window) {
+	if (glfwGetKey(window, GLFW_KEY_W)) {
+		TeclaW = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S)) {
+		TeclaS = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A)) {
+		TeclaA = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D)) {
+		TeclaD = true;
+	}
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	//Cuando pulsamos la tecla ESC se cierra la aplicacion
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
-
-
 	if (key == GLFW_KEY_UP && action == GLFW_PRESS) TeclaUp = true;
 
 	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) TeclaDown = true;
@@ -465,11 +461,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		Key2 = true;
 	}
 
-	if (key == GLFW_KEY_W ) TeclaW = true;
+	/*if (key == GLFW_KEY_W ) TeclaW = true;
 
 	if (key == GLFW_KEY_S) TeclaS = true;
 
 	if (key == GLFW_KEY_D ) TeclaD = true;
 
-	if (key == GLFW_KEY_A ) TeclaA = true;
+	if (key == GLFW_KEY_A ) TeclaA = true;*/
 }
+
