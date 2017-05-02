@@ -37,6 +37,14 @@ bool TeclaRight = false;
 bool TeclaLeft = false;
 bool Key1 = false;
 bool Key2 = false;
+bool TeclaW = false;
+bool TeclaS = false;
+bool TeclaA = false;
+bool TeclaD = false;
+
+
+//Variables para el movimiento de la camara
+
 
 int main() {
 
@@ -224,8 +232,39 @@ int main() {
 	//liberar el buffer de vertices
 	glBindVertexArray(0);
 
-	//Bucle de dibujado (VENTANA)
+	/*vec3 cameraPos = vec3(0.0f, 0.0f, 3.0f);*/
+	vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
+	vec3 cameraUp = vec3(0.0f, 1.0f, 0.0f);
+	//CAMARA
+	
+	//Posicion de la camara
 
+	vec3 cameraPos = vec3(0.0f, 0.0f, 3.0f);
+
+	//Dirección de la camara
+
+	vec3 cameraTarget = vec3(0.0f, 0.0f, 0.0f);
+	vec3 cameraDirection = normalize(cameraPos - cameraTarget);
+
+	//Vector RIGHT
+
+	vec3 up = vec3(0.0f, 1.0f, 0.0f);
+	vec3 cameraRight = normalize(cross(up, cameraDirection));
+
+	//Vector UP
+	//vec3 cameraUp = cross(cameraDirection, cameraRight);
+
+	//Matriz look at
+
+	mat4 view;
+	view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+	
+
+	GLfloat camX = 0.0f;
+	GLfloat camZ = 3.0f;
+
+	//Bucle de dibujado 
 	while (!glfwWindowShouldClose(window)) {
 
 		glfwPollEvents();
@@ -253,13 +292,6 @@ int main() {
 		else
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		/*transformacion = scale(transformacion, vec3(0.5f, -0.5f, 0.f));
-		transformacion = translate(transformacion, vec3(0.5f, 0.5f, 0.0f));
-		transformacion = rotate(transformacion, angle, vec3(0.0f, 0.0f, 1.0f));*/
-
-	/*	GLint transformacionlocation = glGetUniformLocation(shader.Program, "transformacion");
-		glUniformMatrix4fv(transformacionlocation, 1, GL_FALSE, value_ptr(transformacion));*/
-
 		//Activar textura
 
 		glActiveTexture(GL_TEXTURE0);
@@ -274,6 +306,8 @@ int main() {
 
 		GLfloat angleX;
 		GLfloat angleY;
+
+		
 
 		//Modificación de la opacidad mediante las felchas
 
@@ -308,6 +342,26 @@ int main() {
 			Key2 = false;
 		}
 
+		//WASD
+
+		if (TeclaW) {
+			camZ = camZ -0.1f;
+			TeclaW = false;
+		}
+		if (TeclaS) {
+			camZ = camZ + 0.1f;
+			TeclaS = false;
+		}
+
+		if (TeclaA) {
+			camX = camX -0.1f;
+			TeclaA = false;
+		}
+		if (TeclaD) {
+			camX = camX + 0.1f;
+			TeclaD = false;
+		}
+
 		shader.Use();
 
 		mat4 model;
@@ -315,8 +369,19 @@ int main() {
 		model = rotate(model, angleX, vec3(0.5f, 0.0f, 0.0f));
 		model = rotate(model, angleY, vec3(0.0f, 0.5f, 0.0f));
 
-		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
+		
+		//Camara
+		
+		GLfloat radius = 10.0f;
+		GLfloat camX = sin(glfwGetTime()*3) * radius;
+		GLfloat camZ = cos(glfwGetTime()*3) * radius;
 
+		cameraPos = vec3(camX, 0.f, camZ);
+
+		view = lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+		//view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
 		GLint modelLoc = glGetUniformLocation(shader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(shader.Program, "view");;
 		GLint projLoc = glGetUniformLocation(shader.Program, "projection");
@@ -329,15 +394,15 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
+		
 		//Carga de 10 cubos
-
-
+		
 		for (int i = 1; i < 10; i++) {
 
 			mat4 model;
 
 			model = translate(model, CubesPositionBuffer[i]);
-			model = rotate(model, (GLfloat)glfwGetTime()*10.0f, vec3(0.5f, 1.0f, 0.0f));
+			model = rotate(model, (GLfloat)glfwGetTime()*5.0f, vec3(0.5f, 1.0f, 0.0f));
 
 			glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, value_ptr(model));
 
@@ -346,9 +411,6 @@ int main() {
 
 
 		}
-
-
-
 
 		// bind index buffer if you want to render indexed data
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -402,4 +464,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
 		Key2 = true;
 	}
+
+	if (key == GLFW_KEY_W ) TeclaW = true;
+
+	if (key == GLFW_KEY_S) TeclaS = true;
+
+	if (key == GLFW_KEY_D ) TeclaD = true;
+
+	if (key == GLFW_KEY_A ) TeclaA = true;
 }
