@@ -28,9 +28,14 @@ const GLint WIDTH = 800, HEIGHT = 800;
 bool WIREFRAME = false;
 int screenWithd, screenHeight;
 
+
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void DoMovement(GLFWwindow* window);
+
 
 bool TeclaUp = false;
 bool TeclaDown = false;
@@ -43,6 +48,12 @@ bool TeclaS = false;
 bool TeclaA = false;
 bool TeclaD = false;
 
+GLfloat lastX = 400, lastY = 400;
+GLfloat YAW = -90.0f;
+GLfloat PITCH = 0.0f;
+GLfloat fov = 45.0f;
+
+vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
 
 //Variables para el movimiento de la camara
 
@@ -56,9 +67,10 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
+
 	GLFWwindow* window;
 	glfwSetErrorCallback(error_callback);
-
+	
 	//comprobar que GLFW esta activo
 	if (!glfwInit())
 		std::exit(EXIT_FAILURE);
@@ -81,10 +93,13 @@ int main() {
 	}
 
 	glfwGetFramebufferSize(window, &screenWithd, &screenHeight);
-
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	//que funcion se llama cuando se detecta una pulsaci�n de tecla en la ventana x
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	DoMovement(window);
 	//cargamos los shader
 	shader shader("./src/cubos_Vertex.vertexshader", "./src/cubos_Fragment.fragmentshader");
@@ -199,7 +214,7 @@ int main() {
 	GLfloat Opacidad = 0.5;
 
 	mat4 projection;
-	projection = perspective(45.0f,(GLfloat)screenWithd/ (GLfloat)screenHeight, 0.1f, 1000.f);
+	
 
 	//Declarar el VBO y el EBO
 
@@ -233,7 +248,7 @@ int main() {
 	glBindVertexArray(0);
 
 	/*vec3 cameraPos = vec3(0.0f, 0.0f, 3.0f);*/
-	vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
+	
 	vec3 cameraUp = vec3(0.0f, 1.0f, 0.0f);
 	//CAMARA
 	
@@ -266,7 +281,7 @@ int main() {
 
 		glfwPollEvents();
 		DoMovement(window);
-		glClearColor(0.6f, 0.6f, 1.0f, 1.f);
+		glClearColor(0.4f, 0.4f, 0.5f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		if (WIREFRAME == true) {
@@ -277,6 +292,7 @@ int main() {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		//Activar textura
+		projection = perspective(fov, (GLfloat)screenWithd / (GLfloat)screenHeight, 0.1f, 1000.f);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
@@ -468,5 +484,49 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_D ) TeclaD = true;
 
 	if (key == GLFW_KEY_A ) TeclaA = true;*/
+}
+
+bool firstMouse = true;
+void mouse_callback(GLFWwindow* window, double xpos, double ypos){
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	GLfloat xoffset = xpos - lastX;
+	GLfloat yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	GLfloat sensitivity = 0.05f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	YAW += xoffset;
+	PITCH += yoffset;
+
+	if (PITCH > 89.0f)
+		PITCH = 89.0f;
+	if (PITCH < -89.0f)
+		PITCH = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(YAW)) * cos(glm::radians(PITCH));
+	front.y = sin(glm::radians(PITCH));
+	front.z = sin(glm::radians(YAW)) * cos(glm::radians(PITCH));
+	cameraFront = glm::normalize(front);
+
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
+	if (fov >= 1.0f && fov <= 45.0f)
+		fov -= yoffset;
+	if (fov <= 1.0f)
+		fov = 1.0f;
+	if (fov >= 45.0f)
+		fov = 45.0f;
 }
 
