@@ -14,6 +14,7 @@
 #include <sstream>
 #include  <iostream>
 #include "shader.h"
+#include "camera.h"
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
@@ -24,10 +25,23 @@
 using namespace std;
 using namespace glm;
 
-const GLint WIDTH = 800, HEIGHT = 800;
 bool WIREFRAME = false;
 int screenWithd, screenHeight;
 
+bool TeclaUp = false;
+bool TeclaDown = false;
+bool TeclaRight = false;
+bool TeclaLeft = false;
+bool Key1 = false;
+bool Key2 = false;
+
+GLfloat lastX = 400, lastY = 400;
+GLfloat fov = 45.0f;
+
+vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
+GLfloat sensitivity = 0.05f;
+vec3 cameraPos = vec3(0.0f, 0.0f, 3.0f);
+vec3 cameraTarget = vec3(0.0f, 0.0f, 0.0f);
 
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -36,27 +50,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void DoMovement(GLFWwindow* window);
 
-
-bool TeclaUp = false;
-bool TeclaDown = false;
-bool TeclaRight = false;
-bool TeclaLeft = false;
-bool Key1 = false;
-bool Key2 = false;
-bool TeclaW = false;
-bool TeclaS = false;
-bool TeclaA = false;
-bool TeclaD = false;
-
-GLfloat lastX = 400, lastY = 400;
-GLfloat YAW = -90.0f;
-GLfloat PITCH = 0.0f;
-GLfloat fov = 45.0f;
-
-vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
-
 //Variables para el movimiento de la camara
 
+camera Camara(cameraPos, cameraTarget, sensitivity, fov);
 
 int main() {
 
@@ -93,7 +89,7 @@ int main() {
 	}
 
 	glfwGetFramebufferSize(window, &screenWithd, &screenHeight);
-	glfwSetCursorPosCallback(window, mouse_callback);
+
 	glfwSetScrollCallback(window, scroll_callback);
 
 	//que funcion se llama cuando se detecta una pulsaci�n de tecla en la ventana x
@@ -168,13 +164,11 @@ int main() {
 	// Crear los VBO, VAO y EBO
 
 	GLuint VBO;
-	//GLuint EBO;
 	GLuint VAO;
 
 	//reservar memoria para el VAO, VBO y EBO
 
 	glGenBuffers(1, &VBO);
-	//glGenBuffers(1, &EBO);
 	glGenBuffers(1, &VAO);
 
 	//Textura 1
@@ -215,20 +209,16 @@ int main() {
 
 	mat4 projection;
 	
-
 	//Declarar el VBO y el EBO
 
 	//Enlazar el buffer con openGL
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
 
 	//Alocamos memoria suficiente para almacenar 4 grupos de 3 floats (segundo parámetro) (VBO)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(VertexBufferCube), VertexBufferCube, GL_STATIC_DRAW);
 
 	//Alocamos ahora el EBO()
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(IndexBufferObject), IndexBufferObject, GL_STATIC_DRAW);
 
 	//Buffer de posicion
 
@@ -247,24 +237,12 @@ int main() {
 	//liberar el buffer de vertices
 	glBindVertexArray(0);
 
-	/*vec3 cameraPos = vec3(0.0f, 0.0f, 3.0f);*/
-	
-	vec3 cameraUp = vec3(0.0f, 1.0f, 0.0f);
 	//CAMARA
 	
 	//Posicion de la camara
-
-	vec3 cameraPos = vec3(0.0f, 0.0f, 3.0f);
-
 	//Dirección de la camara
 
-	vec3 cameraTarget = vec3(0.0f, 0.0f, 0.0f);
-	vec3 cameraDirection = normalize(cameraPos - cameraTarget);
-
 	//Vector RIGHT
-
-	vec3 up = vec3(0.0f, 1.0f, 0.0f);
-	vec3 cameraRight = normalize(cross(up, cameraDirection));
 
 	//Vector UP
 	//vec3 cameraUp = cross(cameraDirection, cameraRight);
@@ -281,6 +259,7 @@ int main() {
 
 		glfwPollEvents();
 		DoMovement(window);
+		glfwSetCursorPosCallback(window, mouse_callback);
 		glClearColor(0.4f, 0.4f, 0.5f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -292,7 +271,7 @@ int main() {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		//Activar textura
-		projection = perspective(fov, (GLfloat)screenWithd / (GLfloat)screenHeight, 0.1f, 1000.f);
+		projection = perspective(Camara.GetFOV(), (GLfloat)screenWithd / (GLfloat)screenHeight, 0.1f, 1000.f);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
@@ -339,34 +318,13 @@ int main() {
 			glUniform1f(glGetUniformLocation(shader.Program, "Opacidad"), Opacidad);
 			Key2 = false;
 		}
-
-		//WASD
-
-		if (TeclaW) {
-			camZ = camZ -0.1f;
-			TeclaW = false;
-		}
-		if (TeclaS) {
-			camZ = camZ + 0.1f;
-			TeclaS = false;
-		}
-
-		if (TeclaA) {
-			camX = camX -0.1f;
-			TeclaA = false;
-		}
-		if (TeclaD) {
-			camX = camX + 0.1f;
-			TeclaD = false;
-		}
-
 		shader.Use();
 
 		mat4 model;
 		mat4 view;
 		model = rotate(model, angleX, vec3(0.5f, 0.0f, 0.0f));
 		model = rotate(model, angleY, vec3(0.0f, 0.5f, 0.0f));
-
+		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
 		
 		//Camara
 		
@@ -376,10 +334,7 @@ int main() {
 
 		cameraPos = vec3(camX, 0.f, camZ);
 
-		//view = lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-		view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
+		view = Camara.LookAt();
 		GLint modelLoc = glGetUniformLocation(shader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(shader.Program, "view");;
 		GLint projLoc = glGetUniformLocation(shader.Program, "projection");
@@ -429,7 +384,6 @@ int main() {
 
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	//glDeleteBuffers(1, &EBO);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -443,18 +397,8 @@ void error_callback(int error, const char* description)
 }
 
 void DoMovement(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_W)) {
-		TeclaW = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S)) {
-		TeclaS = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_A)) {
-		TeclaA = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_D)) {
-		TeclaD = true;
-	}
+	Camara.DoMovement(window);
+	
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -476,57 +420,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
 		Key2 = true;
 	}
-
-	/*if (key == GLFW_KEY_W ) TeclaW = true;
-
-	if (key == GLFW_KEY_S) TeclaS = true;
-
-	if (key == GLFW_KEY_D ) TeclaD = true;
-
-	if (key == GLFW_KEY_A ) TeclaA = true;*/
 }
 
 bool firstMouse = true;
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
 
-	if (firstMouse)
-	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	GLfloat xoffset = xpos - lastX;
-	GLfloat yoffset = lastY - ypos;
-	lastX = xpos;
-	lastY = ypos;
-
-	GLfloat sensitivity = 0.05f;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	YAW += xoffset;
-	PITCH += yoffset;
-
-	if (PITCH > 89.0f)
-		PITCH = 89.0f;
-	if (PITCH < -89.0f)
-		PITCH = -89.0f;
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(YAW)) * cos(glm::radians(PITCH));
-	front.y = sin(glm::radians(PITCH));
-	front.z = sin(glm::radians(YAW)) * cos(glm::radians(PITCH));
-	cameraFront = glm::normalize(front);
-
+	Camara.MouseMove( window,  xpos, ypos);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
-	if (fov >= 1.0f && fov <= 45.0f)
-		fov -= yoffset;
-	if (fov <= 1.0f)
-		fov = 1.0f;
-	if (fov >= 45.0f)
-		fov = 45.0f;
+
+	Camara.MouseScroll(window, xoffset, yoffset);
+
 }
 
