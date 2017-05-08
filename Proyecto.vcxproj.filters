@@ -24,12 +24,18 @@
     <ClCompile Include="src\camera.cpp">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
+    <ClCompile Include="src\Object.cpp">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\camera.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
     <ClInclude Include="src\shader.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
-    <ClInclude Include="src\camera.h">
+    <ClInclude Include="src\Object.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
@@ -40,10 +46,10 @@
     <None Include="src\textureVertex.vertexshader">
       <Filter>Archivos de recursos</Filter>
     </None>
-    <None Include="src\cubos_Fragment.fragmentshader">
+    <None Include="src\LampFragment.fragmentshader">
       <Filter>Archivos de recursos</Filter>
     </None>
-    <None Include="src\cubos_Vertex.vertexshader">
+    <None Include="src\LampVertex.vertexshader">
       <Filter>Archivos de recursos</Filter>
     </None>
   </ItemGroup>

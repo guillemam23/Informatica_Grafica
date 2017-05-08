@@ -17,8 +17,8 @@ uniform float Opacidad;
 void main()
 {
 
-	// Output color = red 
-	//color = vec4(ourColor,1.0f);
+	Output color = red 
+	color = vec4(ourColor,1.0f);
     //color = mix(texture(Texture1, TextCoord),texture(Texture2, TextCoord),Opacidad);
-	color = texture(Texture1, TextCoord);
+	//color = texture(Texture1, TextCoord);
 }

@@ -21,15 +21,17 @@
   <ItemGroup>
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Object.cpp" />
     <ClCompile Include="src\shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camera.h" />
+    <ClInclude Include="src\Object.h" />
     <ClInclude Include="src\shader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\cubos_Fragment.fragmentshader" />
-    <None Include="src\cubos_Vertex.vertexshader" />
+    <None Include="src\LampFragment.fragmentshader" />
+    <None Include="src\LampVertex.vertexshader" />
     <None Include="src\textureFragment.fragmentshader" />
     <None Include="src\textureVertex.vertexshader" />
   </ItemGroup>
@@ -104,13 +106,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\Common;.\include\glfw\include;.\include\soil\src;.\include\glm;.\include\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\2N Semestre\Informàtica gràfica\Practicas\Practica1\Practica1\include\assimp\include;.\Common;.\include\glfw\include;.\include\soil\src;.\include\glm;.\include\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>.\include\soil\lib;.\include\glew\lib\Release\Win32;.\include\glfw\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libSOIL.lib;opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\2N Semestre\Informàtica gràfica\Practicas\Practica1\Practica1\include\assimp\lib\x64;.\include\soil\lib;.\include\glew\lib\Release\Win32;.\include\glfw\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libSOIL.lib;opengl32.lib;glew32s.lib;glfw3.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -15,9 +15,7 @@ camera::camera(vec3 position, vec3 direction, GLfloat sensitivity, GLfloat fov)
 
 }
 
-void camera::DoMovement(GLFWwindow * window)
-
-{
+void camera::DoMovement(GLFWwindow * window){
 	bool TeclaW = false;
 	bool TeclaS = false;
 	bool TeclaA = false;

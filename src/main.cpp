@@ -1,5 +1,4 @@
-﻿
-//GLEW
+﻿//GLEW
 #define GLEW_STATIC
 #include <GL\glew.h>
 //GLFW
@@ -15,6 +14,7 @@
 #include  <iostream>
 #include "shader.h"
 #include "camera.h"
+#include "Object.h"
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
@@ -31,6 +31,12 @@ int screenWithd, screenHeight;
 bool TeclaUp = false;
 bool TeclaDown = false;
 bool TeclaRight = false;
+
+bool Tecla2 = false;
+bool Tecla4 = false;
+bool Tecla6 = false;
+bool Tecla8 = false;
+
 bool TeclaLeft = false;
 bool Key1 = false;
 bool Key2 = false;
@@ -43,6 +49,9 @@ GLfloat sensitivity = 0.05f;
 vec3 cameraPos = vec3(0.0f, 0.0f, 3.0f);
 vec3 cameraTarget = vec3(0.0f, 0.0f, 0.0f);
 
+vec3 lightPos(1.2f, 0.0f, 2.0f);
+
+
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -53,6 +62,12 @@ void DoMovement(GLFWwindow* window);
 //Variables para el movimiento de la camara
 
 camera Camara(cameraPos, cameraTarget, sensitivity, fov);
+
+//vec3 escalado = vec3(0.0f, 0.0f, 0.0f);
+//vec3 rotado = vec3(0.0f, 0.0f, 0.0f);
+//vec3 posicion = vec3(0.0f, 0.0f, 0.0f);
+//
+//Object cubo (escalado, rotado, posicion, Object::cube);
 
 int main() {
 
@@ -66,7 +81,7 @@ int main() {
 
 	GLFWwindow* window;
 	glfwSetErrorCallback(error_callback);
-	
+
 	//comprobar que GLFW esta activo
 	if (!glfwInit())
 		std::exit(EXIT_FAILURE);
@@ -98,65 +113,70 @@ int main() {
 
 	DoMovement(window);
 	//cargamos los shader
-	shader shader("./src/cubos_Vertex.vertexshader", "./src/cubos_Fragment.fragmentshader");
+
+	shader shaderLamp("./src/LightVertex.vertexshader", "./src/LightFragment.fragmentshader");
+	shader shader("./src/LightVertex.vertexshader", "./src/LightFragment.fragmentshader");
+
 
 	// Definir el buffer de vertices (shader modificado)
 
-	GLfloat VertexBufferCube[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		0.5f , -0.5f, -0.5f,  1.0f, 0.0f,
-		0.5f ,  0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f ,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	GLfloat VertexBufferObject[] = {
+		//front
+		1.0f ,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+		1.0f , -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+		1.0f ,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+		//back
+		-1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+		1.0f , -1.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+		1.0f ,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+		1.0f ,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+		-1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+		//left
+		-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
+		-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
+		-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
+		-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
+		-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
+		-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
+		//right
+		1.0f , -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
+		1.0f ,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
+		1.0f ,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+		1.0f ,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+		1.0f , -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+		1.0f , -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
+		//down
+		-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
+		1.0f , -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
+		1.0f , -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
+		1.0f , -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
+		-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
+		-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
+		//up
+		1.0f ,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+		1.0f ,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+		-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+		-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+		-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+		1.0f ,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		0.5f , -0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f ,  0.5f,  0.5f,  1.0f, 1.0f,
-		0.5f ,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		0.5f ,  0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f ,  0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f , -0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f , -0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f , -0.5f,  0.5f,  0.0f, 0.0f,
-		0.5f ,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f , -0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f , -0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f , -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f ,  0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f ,  0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f ,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
 	vec3 CubesPositionBuffer[] = {
 		vec3(0.0f ,  0.0f,  0.0f),
-		vec3(2.0f ,  5.0f, -15.0f),
-		vec3(-1.5f, -2.2f, -2.5f),
+		/*vec3(1.0f ,  5.0f, -1.0f),
+		/*vec3(-1.5f, -2.2f, -2.5f),
 		vec3(-3.8f, -2.0f, -12.3f),
 		vec3(2.4f , -0.4f, -3.5f),
 		vec3(-1.7f,  3.0f, -7.5f),
 		vec3(1.3f , -2.0f, -2.5f),
 		vec3(1.5f ,  2.0f, -2.5f),
 		vec3(1.5f ,  0.2f, -1.5f),
-		vec3(-1.3f,  1.0f, -1.5f)
+		vec3(-1.3f,  1.0f, -1.5f)*/
 	};
 
 	glfwGetTime();
@@ -208,7 +228,7 @@ int main() {
 	GLfloat Opacidad = 0.5;
 
 	mat4 projection;
-	
+
 	//Declarar el VBO y el EBO
 
 	//Enlazar el buffer con openGL
@@ -216,19 +236,19 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 	//Alocamos memoria suficiente para almacenar 4 grupos de 3 floats (segundo parámetro) (VBO)
-	glBufferData(GL_ARRAY_BUFFER, sizeof(VertexBufferCube), VertexBufferCube, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(VertexBufferObject), VertexBufferObject, GL_STATIC_DRAW);
 
 	//Alocamos ahora el EBO()
 
 	//Buffer de posicion
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
-	// Buffer de textura
+	//// Buffer de textura
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
+	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GLfloat)));
+	//glEnableVertexAttribArray(2);
 
 	//Activar el z-buffer
 
@@ -238,7 +258,7 @@ int main() {
 	glBindVertexArray(0);
 
 	//CAMARA
-	
+
 	//Posicion de la camara
 	//Dirección de la camara
 
@@ -254,22 +274,36 @@ int main() {
 	GLfloat camX = 0.0f;
 	GLfloat camZ = 3.0f;
 
+	GLuint lightVAO;
+	glGenVertexArrays(1, &lightVAO);
+	glBindVertexArray(lightVAO);
+	// We only need to bind to the VBO, the container's VBO's data already contains the correct data.
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	// Set the vertex attributes (only position data for our lamp)
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+	
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
+
 	//Bucle de dibujado 
 	while (!glfwWindowShouldClose(window)) {
 
 		glfwPollEvents();
 		DoMovement(window);
 		glfwSetCursorPosCallback(window, mouse_callback);
-		glClearColor(0.4f, 0.4f, 0.5f, 1.f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (WIREFRAME == true) {
+	/*	if (WIREFRAME == true) {
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 		else
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+*/
 		//Activar textura
 		projection = perspective(Camara.GetFOV(), (GLfloat)screenWithd / (GLfloat)screenHeight, 0.1f, 1000.f);
 
@@ -286,25 +320,58 @@ int main() {
 		GLfloat angleX;
 		GLfloat angleY;
 
-		//Modificación de la opacidad mediante las felchas
+		mat4 model;
+		mat4 view;
+		
+		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
+
+		//MOVIMIENTO MEDIANTE FLECHAS
 
 		if (TeclaUp) {
-			angleX = angleX - 5.0f;
+			y += 0.1f;
 			TeclaUp = false;
 		}
 		if (TeclaDown) {
-			angleX = angleX + 5.0f;
+			y -= 0.1f;
 			TeclaDown = false;
 		}
 
 		if (TeclaLeft) {
-			angleY = angleY - 5.0f;
+			x -= 0.1f;
 			TeclaLeft = false;
 		}
 		if (TeclaRight) {
-			angleY = angleY + 5.0f;
+			x += 0.1f;
 			TeclaRight = false;
 		}
+
+
+		//ROTACION
+
+		if (Tecla2) {
+			angleX += 5.0f;
+			Tecla2 = false;
+		}
+		if (Tecla4) {
+			angleY -= 5.0f;
+			Tecla4 = false;
+		}
+
+		if (Tecla6) {
+			angleY += 5.0f;
+			Tecla6 = false;
+		}
+		if (Tecla8) {
+			angleX -= 5.0f;
+			Tecla8 = false;
+		}
+
+		vec3 move = vec3(x, y, z);
+		model = translate(model, move);
+	
+		model = rotate(model, angleX, vec3(1.0f, 0.0f, 0.0f));
+		model = rotate(model, angleY, vec3(0.0f, 1.0f, 0.0f));
+
 
 		if (Key1) {
 			Opacidad = 1.0f;
@@ -320,37 +387,56 @@ int main() {
 		}
 		shader.Use();
 
-		mat4 model;
-		mat4 view;
-		model = rotate(model, angleX, vec3(0.5f, 0.0f, 0.0f));
-		model = rotate(model, angleY, vec3(0.0f, 0.5f, 0.0f));
-		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
-		
 		//Camara
-		
+
 		GLfloat radius = 10.0f;
 		/*GLfloat camX = sin(glfwGetTime()*3) * radius;
 		GLfloat camZ = cos(glfwGetTime()*3) * radius;*/
 
 		cameraPos = vec3(camX, 0.f, camZ);
 
+		GLint objectColorLoc = glGetUniformLocation(shader.Program, "objectColor");
+		GLint lightColorLoc = glGetUniformLocation(shader.Program, "lightColor");
+		glUniform3f(objectColorLoc, 0.8f, 0.4f, 1.0f);
+		glUniform3f(lightColorLoc, 1.0f, 0.5f, 1.0f);
+
 		view = Camara.LookAt();
+
 		GLint modelLoc = glGetUniformLocation(shader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(shader.Program, "view");;
 		GLint projLoc = glGetUniformLocation(shader.Program, "projection");
 
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, value_ptr(projection));
 
 		glBindVertexArray(VAO);
+		//glm::mat4 model;
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
-		
+		shaderLamp.Use();
+
+		modelLoc = glGetUniformLocation(shaderLamp.Program, "model");
+		viewLoc = glGetUniformLocation(shaderLamp.Program, "view");
+		projLoc = glGetUniformLocation(shaderLamp.Program, "projection");
+
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+	
+		model = glm::translate(model, lightPos);
+		model = glm::scale(model, glm::vec3(0.2f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+
+		glBindVertexArray(lightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+
+
 		//Carga de 10 cubos
-		
-		for (int i = 1; i < 10; i++) {
+
+		/*for (int i = 1; i < 10; i++) {
 
 			mat4 model;
 
@@ -363,7 +449,7 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-		}
+		}*/
 
 		// bind index buffer if you want to render indexed data
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -398,7 +484,7 @@ void error_callback(int error, const char* description)
 
 void DoMovement(GLFWwindow* window) {
 	Camara.DoMovement(window);
-	
+
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -414,23 +500,28 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) TeclaLeft = true;
 
-	if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
-		Key1 = true;
-	}
-	if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
-		Key2 = true;
-	}
+	if (key == GLFW_KEY_1 && action == GLFW_PRESS) Key1 = true;
+
+	//if (key == GLFW_KEY_2 && action == GLFW_PRESS) Key2 = true;
+
+
+	if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) Tecla2 = true;
+
+	if (key == GLFW_KEY_KP_4 && action == GLFW_PRESS) Tecla4 = true;
+
+	if (key == GLFW_KEY_KP_6 && action == GLFW_PRESS) Tecla6 = true;
+
+	if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) Tecla8 = true;
 }
 
 bool firstMouse = true;
-void mouse_callback(GLFWwindow* window, double xpos, double ypos){
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
-	Camara.MouseMove( window,  xpos, ypos);
+	Camara.MouseMove(window, xpos, ypos);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
 	Camara.MouseScroll(window, xoffset, yoffset);
 
 }
-
