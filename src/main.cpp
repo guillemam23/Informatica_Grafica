@@ -114,7 +114,7 @@ int main() {
 	DoMovement(window);
 	//cargamos los shader
 
-	shader shaderLamp("./src/LightVertex.vertexshader", "./src/LightFragment.fragmentshader");
+	shader shaderLamp("./src/LampVertex.vertexshader", "./src/LampFragment.fragmentshader");
 	shader shader("./src/LightVertex.vertexshader", "./src/LightFragment.fragmentshader");
 
 
@@ -423,7 +423,7 @@ int main() {
 
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-	
+		model = mat4();
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -469,6 +469,7 @@ int main() {
 	// Terminate GLFW, clearing any resources allocated by GLFW.
 
 	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
 
 	glfwDestroyWindow(window);

@@ -40,16 +40,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\textureFragment.fragmentshader">
-      <Filter>Archivos de recursos</Filter>
-    </None>
-    <None Include="src\textureVertex.vertexshader">
-      <Filter>Archivos de recursos</Filter>
-    </None>
     <None Include="src\LampFragment.fragmentshader">
       <Filter>Archivos de recursos</Filter>
     </None>
     <None Include="src\LampVertex.vertexshader">
+      <Filter>Archivos de recursos</Filter>
+    </None>
+    <None Include="src\LightFragment.fragmentshader">
+      <Filter>Archivos de recursos</Filter>
+    </None>
+    <None Include="src\LightVertex.vertexshader">
       <Filter>Archivos de recursos</Filter>
     </None>
   </ItemGroup>
